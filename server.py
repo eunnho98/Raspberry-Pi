@@ -1,7 +1,5 @@
-Python 3.8.6 (tags/v3.8.6:db45529, Sep 23 2020, 15:52:53) [MSC v.1927 64 bit (AMD64)] on win32
-Type "help", "copyright", "credits" or "license()" for more information.
->>> import _thread
 import socket
+import _thread
 
 end = 0
 print("안녕하세요")
@@ -25,7 +23,7 @@ def threaded(client_socket, addr):
             print(f"e: {e}")
 
 
-ip = '127.0.0.1'
+ip = '' # server ip
 port = 8080
 
 # 소켓 초기화
