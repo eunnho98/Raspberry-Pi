@@ -1,14 +1,15 @@
-import secrets
 import requests
 import time
-import schedule
 
 def getChannelInfo_second():
-  response = requests.get("https://163.180.173.170:8484/channel/device", verify=False)
-  print(response.content)
-
-schedule.every(3).seconds.do(getChannelInfo_second)
+  global data
+  response = requests.get("https://naver.com", verify=False)
+  data = list(response.headers.keys())
 
 while True:
-  schedule.run_pending()
-  time.sleep(1)
+  getChannelInfo_second()
+  if 'Content-Type' in data:
+    break
+  print(data)
+  time.sleep(2)
+  
