@@ -25,3 +25,7 @@ To run the example, you will need instances of the `cli` example:
 .. code-block:: console
 
    $ python cli.py answer
+
+시작
+   $ python webrtc.py offer
+   $ python cli.py answer
