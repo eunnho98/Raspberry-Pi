@@ -1,10 +1,19 @@
 import socket
+import requests
+from random import random
+
+# POST: /api/ip, 서버에 Rasberry Pi Private IP 전달
 
 # 접속할 서버 주소입니다. 여기에서는 루프백(loopback) 인터페이스 주소 즉 localhost를 사용합니다. 
-HOST = ''
+HOST = '127.0.0.1'
+
+urlip = 'http://localhost:3000/api/ip'
 
 # 클라이언트 접속을 대기하는 포트 번호입니다.   
-PORT = 9999        
+PORT = 9999   
+
+response = requests.post(urlip, json={'myIP':HOST})
+print(response.content)
 
 # 소켓 객체를 생성합니다. 
 # 주소 체계(address family)로 IPv4, 소켓 타입으로 TCP 사용합니다.  
