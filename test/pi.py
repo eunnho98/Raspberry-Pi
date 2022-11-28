@@ -1,8 +1,12 @@
 import socket
 import requests
+import ssl
 import asyncio
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+ssl._create_default_https_context = ssl._create_unverified_context
 
-# Test with Ultrasonic wave sensor
+# 초음파센서 값으로 임시 통신
 import RPi.GPIO as GPIO
 import time
 GPIO.setwarnings(False)
@@ -34,15 +38,19 @@ GPIO.setup(EP, GPIO.IN)
 time.sleep(0.5)
 
 # Socket
-HOST = '192.168.0.26'
-url = 'http://192.168.0.7:3000/api/ip'
+
+def ipcheck(): # 로컬 IP주소 획득
+	return socket.gethostbyname(socket.getfqdn())
+HOST = ipcheck()
+url = 'https://43.201.130.48:8484/connection'
 PORT = 9999
 
-response = requests.post(url, json={'myIP':HOST})
-print(response.content)
+response = requests.post(url, json={'privateIp':HOST}, verify=False)
 
+# 주소 체계(address family)로 IPv4, 소켓 타입으로 TCP 사용 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+# WinError 10048 에러 해결
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 server_socket.bind((HOST, PORT))

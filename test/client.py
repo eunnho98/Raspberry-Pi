@@ -1,18 +1,39 @@
+# Temp 클라이언트 
 import socket
 import requests
 import asyncio
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-urlip = 'http://localhost:3000/api/ip'
-
-# 서버의 주소입니다. hostname 또는 ip address를 사용할 수 있습니다.
-# HOST = '127.0.0.1'  
-# 서버에서 지정해 놓은 포트 번호입니다. 
+urlAuth = 'https://43.201.130.48:8484/auth/login'
+urlRegi = 'https://43.201.130.48:8484/auth/register'
+urlip = 'https://43.201.130.48:8484/connection'
 PORT = 9999       
 
-response = requests.get(urlip).json();
-HOST = response[1]['ip']
-print(HOST)
+# POST /auth/register
+responseRegi = requests.post(urlRegi, json={
+  'userid' : 'asd',
+  'password': 'asd',
+  'nickname': 'asd'
+}, verify=False)
+
+# POST /auth/login
+responseAuth = requests.post(urlAuth, json={
+  'userid': 'asd',
+  'password': 'asd'
+}, verify=False).json()
+accessToken = responseAuth['data']['accessToken']
+refreshToken = responseAuth['data']['refreshToken']
+
+# GET/ connection - get internal ip for create connection on android
+header = {
+  'authorization' : 'Bearer ' + accessToken,
+  'refresh': 'Bearer ' + refreshToken
+}
+response = requests.get(urlip, verify=False, headers=header).json()
+print(response)
+
+HOST = response['ip']
 
 if (HOST):
     # 소켓 객체를 생성합니다. 
