@@ -1,12 +1,12 @@
 import socket
 import requests
-import ssl
-import asyncio
+import threading
+import datetime
+import pygame # To play Music
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-ssl._create_default_https_context = ssl._create_unverified_context
 
-# 초음파센서 값으로 임시 통신
+# Test with Ultrasonic wave sensor
 import RPi.GPIO as GPIO
 import time
 GPIO.setwarnings(False)
@@ -31,26 +31,54 @@ def getDistance():
     fDistance = (nEndTime - nStartTime).microseconds/29./2.
     
     return str(fDistance)
-
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(TP, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(EP, GPIO.IN)
 time.sleep(0.5)
+def sendDistance(c):
+    while(1):
+        # fDistance = getDistance()
+        # fD = fDistance.encode()
+        fD = "Hello, World!"
+        print('send to client,', fD)
+        fD = fD.encode()
+        c.sendall(fD)
+        time.sleep(2)
 
+# Using Multi-Thread
+def getTime(c):
+    while(1):
+        print('Wait for Receiving\n')
+        data = c.recv(1030)
+        print("Received Start Time to Client", data.decode())
+        startTime = datetime.datetime.strptime(data.decode(), "%H:%M:%S").time()
+    
+        data = c.recv(1030)
+        print("Received End Time to Client", data.decode())
+        endTime = datetime.datetime.strptime(data.decode(), "%H:%M:%S").time()
+        isSound(startTime, endTime)
+    
+# play music if startTime < now < endTime and SensorData != 0
+def isSound(s, e):
+    pygame.init()
+    now = datetime.datetime.now().time()
+    if now > s and now < e:
+        print('Music on\n')
+        pygame.mixer.Sound('/home/eunnho/python/Pi-socket/alarm.wav').play(-1)
+    else:
+        print('Music off\n')
+        pygame.mixer.stop()
+        
 # Socket
-
-def ipcheck(): # 로컬 IP주소 획득
-	return socket.gethostbyname(socket.getfqdn())
-HOST = ipcheck()
+# HOST = socket.gethostbyname(socket.getfqdn())
+HOST = '192.168.0.26'
 url = 'https://43.201.130.48:8484/connection'
 PORT = 9999
 
 response = requests.post(url, json={'privateIp':HOST}, verify=False)
 
-# 주소 체계(address family)로 IPv4, 소켓 타입으로 TCP 사용 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# WinError 10048 에러 해결
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 server_socket.bind((HOST, PORT))
@@ -61,16 +89,13 @@ client_socket, addr = server_socket.accept()
 
 print('Connected by', addr)
 
-while True:
-    #data = client_socket.recv(1030)
-    fDistance = getDistance()
-    fD = fDistance.encode()
-    #if not data:
-    #    break
-    #print('Received from', addr, data.decode())
-    #client_socket.sendall(data)
-    client_socket.sendall(fD)
-    time.sleep(1)
+tsend = threading.Thread(target = sendDistance, args=(client_socket,), daemon=True)
+tgetTime = threading.Thread(target = getTime, args=(client_socket,))
+tgetTime.start()
+tsend.start()
+tgetTime.join()
+tsend.join()
     
 client_socket.close()
 server_socket.close()
+
