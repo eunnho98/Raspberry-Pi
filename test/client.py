@@ -1,7 +1,6 @@
 # Temp 클라이언트 
 import socket
 import requests
-import asyncio
 import urllib3
 import threading
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -37,12 +36,13 @@ print(response)
 HOST = response['ip']
 
 def sendTime(c):
-  sTime = input("input Start Time")
-  c.send(sTime.encode())
-  print("Send StartTime Successfully")
-  eTime = input("input End Time")
-  c.send(eTime.encode())
-  print("Send EndTime Successfully")
+  while(1):
+    sTime = input("input Start Time")
+    c.send(sTime.encode())
+    print("Send StartTime Successfully")
+    eTime = input("input End Time")
+    c.send(eTime.encode())
+    print("Send EndTime Successfully")
 
 def getData(c):
   while(1):
@@ -58,7 +58,7 @@ if (HOST):
     client_socket.connect((HOST, PORT))
 
     tget = threading.Thread(target=getData, args=(client_socket,), daemon=True)
-    tsend = threading.Thread(target=sendTime, args=(client_socket,))
+    tsend = threading.Thread(target=sendTime, args=(client_socket,), daemon=True)
     tsend.start()
     tget.start()
     tsend.join()
