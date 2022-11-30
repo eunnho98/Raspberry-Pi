@@ -68,10 +68,19 @@ def isSound(s, e):
     else:
         print('Music off\n')
         pygame.mixer.stop()
+
+def findPrivateIP():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
+
+
         
 # Socket
 # HOST = socket.gethostbyname(socket.getfqdn())
-HOST = '192.168.0.26'
+HOST = findPrivateIP()
 url = 'https://43.201.130.48:8484/connection'
 PORT = 9999
 
@@ -99,12 +108,3 @@ tsend.join()
 client_socket.close()
 server_socket.close()
 
-# if __name__ == '__main__':
-#   # 소켓을 이용해 로컬 IP 찾기
-# 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# 	s.connect(("8.8.8.8", 80))
-# 	ip = s.getsockname()[0]
-# 	print(s.getsockname()[0])
-# 	s.close()
-
-# https://surprisecomputer.tistory.com/25 부팅 시 프로그램 자동 실행
